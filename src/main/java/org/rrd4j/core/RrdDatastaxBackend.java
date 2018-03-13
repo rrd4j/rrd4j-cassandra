@@ -2,7 +2,6 @@ package org.rrd4j.core;
 
 import com.datastax.driver.mapping.Mapper;
 
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -18,13 +17,12 @@ public class RrdDatastaxBackend extends RrdByteArrayBackend {
     /**
      * <p>Constructor for RrdDatastaxBackend.</p>
      *
-     * @param path a {@link String} object.
+     * @param path   a {@link String} object.
      * @param mapper datastax mapper for RrdDatastax
      */
     public RrdDatastaxBackend(String path, Mapper<RrdDatastax> mapper) {
         super(path);
         this.mapper = mapper;
-
         RrdDatastax rrdObject = mapper.get(path);
         if (rrdObject != null) {
             buffer = rrdObject.getRrd().array();
@@ -32,10 +30,9 @@ public class RrdDatastaxBackend extends RrdByteArrayBackend {
     }
 
     /**
-     * <p>write.</p>
-     *
+     * <p>write data</p>
      * @param offset a long.
-     * @param bytes an array of byte.
+     * @param bytes  an array of byte.
      * @throws IOException if any.
      */
     protected synchronized void write(long offset, byte[] bytes) throws IOException {
@@ -43,7 +40,9 @@ public class RrdDatastaxBackend extends RrdByteArrayBackend {
         dirty = true;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void close() throws IOException {
         if (dirty) {

@@ -7,10 +7,9 @@ import com.datastax.driver.mapping.annotations.Table;
 import java.nio.ByteBuffer;
 
 @Table(keyspace = "rrd4j", name = "rrd",
-       readConsistency = "QUORUM",
-       writeConsistency = "QUORUM",
-       caseSensitiveKeyspace = false,
-       caseSensitiveTable = false)
+        readConsistency = "QUORUM",
+        writeConsistency = "QUORUM"
+        )
 public class RrdDatastax {
     @PartitionKey
     @Column(name = "path")

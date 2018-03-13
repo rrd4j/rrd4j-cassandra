@@ -1,0 +1,7 @@
+# virtual machine crash logs
+hs_err_pid*
+
+.idea
+rrd4j-cassendra.iml
+target
+

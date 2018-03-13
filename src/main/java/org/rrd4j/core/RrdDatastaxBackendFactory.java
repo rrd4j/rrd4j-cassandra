@@ -1,7 +1,5 @@
 package org.rrd4j.core;
 
-
-
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.mapping.Mapper;
@@ -9,6 +7,7 @@ import com.datastax.driver.mapping.MappingManager;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * {@link RrdBackendFactory} that uses
@@ -17,14 +16,23 @@ import java.util.List;
  *
  * @author <a href="mailto:kasperf@asergo.com">Kasper Fock</a>
  */
+@SuppressWarnings("HardCodedStringLiteral")
 public class RrdDatastaxBackendFactory extends RrdBackendFactory {
-    Session session;
-    MappingManager manager;
-    Mapper<RrdDatastax> mapper;
+    private Session session;
+    private MappingManager manager;
+    private Mapper<RrdDatastax> mapper;
 
-    private String createKeyspace = "CREATE KEYSPACE IF NOT EXISTS rrd4j WITH REPLICATION = { 'class' : 'SimpleStrategy','replication_factor':1 }";
-    private String createTable = "CREATE TABLE IF NOT EXISTS rrd4j.rrd (path text primary key, rrd blob)";
 
+    private final String createKeyspace = "CREATE KEYSPACE IF NOT EXISTS rrd4j WITH REPLICATION = { 'class' : 'SimpleStrategy','replication_factor':1 }";
+    private final String createTable = "CREATE TABLE IF NOT EXISTS rrd4j.rrd (path text primary key, rrd blob)";
+
+    static public RrdDatastaxBackendFactory findOrCreate(Session session){
+        try {
+            return (RrdDatastaxBackendFactory) RrdBackendFactory.getFactory("DATASTAX");
+        } catch (IllegalArgumentException e) {
+            return new RrdDatastaxBackendFactory(session);
+        }
+    }
     /**
      * <p>Constructor for RrdDatastaxBackendFactory.</p>
      *
@@ -33,38 +41,28 @@ public class RrdDatastaxBackendFactory extends RrdBackendFactory {
     public RrdDatastaxBackendFactory(Session session) {
         this.session = session;
         ResultSet rs = session.execute(createKeyspace);
-        if(rs.wasApplied()){
-            System.out.println("Keyspace created for rrd");
-        }else{
-            System.out.println("Keyspace failed to create");
+        if(!rs.wasApplied()){
+            Logger.getLogger("RrdDatastaxBackendFactory").warning("Failed to create Keyspace for RRD backend");
         }
         ResultSet tableCreated = session.execute(createTable);
         if(!tableCreated.wasApplied()){
-            System.out.println("RRD table not created in cassandra");
+            Logger.getLogger("RrdDatastaxBackendFactory").warning("RRD table not created in cassandra");
         }
         manager = new MappingManager(session);
         mapper = manager.mapper(RrdDatastax.class,"rrd4j");
-        /*try {
-            RrdBackendFactory fact = RrdBackendFactory.getFactory(getName());
-            RrdBackendFactory.setDefaultFactory(getName());
-        } catch (Exception e) {
-
-        }*/
         RrdBackendFactory.registerAndSetAsDefaultFactory(this);
     }
 
     /**
      * {@inheritDoc}
-     *
      * Creates new RrdDatastaxBackend object for the given id (path).
      */
     protected RrdBackend open(String path, boolean readOnly) throws IOException {
         return new RrdDatastaxBackend(path, mapper);
-
     }
 
     /**
-     * @return all.
+     * @return all rrdDatastax objects .
      */
     public List<RrdDatastax> all() {
         ResultSet results = session.execute("SELECT * FROM rrd4j.rrd");
@@ -72,9 +70,8 @@ public class RrdDatastaxBackendFactory extends RrdBackendFactory {
     }
 
     /**
-     * <p>delete.</p>
-     *
-     * @param path a {@link String} object.
+     * <p>delete the path</p>
+     * @param path to delete.
      */
     public void delete(String path) {
         mapper.delete(path);
@@ -96,7 +93,6 @@ public class RrdDatastaxBackendFactory extends RrdBackendFactory {
 
     /**
      * <p>getName.</p>
-     *
      * @return The {@link String} "DATASTAX".
      */
     public String getName() {
