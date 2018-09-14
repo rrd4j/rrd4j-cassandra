@@ -1,4 +1,4 @@
-# rrd4j-cassandra
+# rrd4j-cassandra [![Build Status](https://travis-ci.org/rrd4j/rrd4j-cassandra.svg?branch=master)](https://travis-ci.org/rrd4j/rrd4j-cassandra)
 
 Rrd4j Backend implementation for [Cassandra](https://github.com/apache/cassandra) by the [Datastax](https://github.com/datastax/java-driver) driver.
 
