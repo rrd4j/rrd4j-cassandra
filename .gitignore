@@ -2,6 +2,6 @@
 hs_err_pid*
 
 .idea
-rrd4j-cassendra.iml
+rrd4j-cassandra.iml
 target
 
