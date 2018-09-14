@@ -31,6 +31,7 @@ public class RrdDatastaxBackend extends RrdByteArrayBackend {
 
     /**
      * <p>write data</p>
+     *
      * @param offset a long.
      * @param bytes  an array of byte.
      * @throws IOException if any.
@@ -46,7 +47,11 @@ public class RrdDatastaxBackend extends RrdByteArrayBackend {
     @Override
     public void close() throws IOException {
         if (dirty) {
-            mapper.save(new RrdDatastax().setPath(getPath()).setRrd(ByteBuffer.wrap(buffer)));
+            try {
+                mapper.save(new RrdDatastax().setPath(getPath()).setRrd(ByteBuffer.wrap(buffer)));
+            } catch (Throwable t) {
+                throw new IOException("Failed to store", t);
+            }
         }
     }
 
