@@ -4,6 +4,7 @@
     <artifactId>rrd4j-cassandra</artifactId>
     <packaging>jar</packaging>
     <version>1.0-SNAPSHOT</version>
+    <description>Rrd4j backend that uses cassandra (datastax) for storage</description>
     <name>rrd4j-cassandra</name>
     <url>https://github.com/rrd4j/rrd4j/</url>
     <properties>
@@ -17,6 +18,12 @@
         <!-- current year. -->
         <year>2018</year>
     </properties>
+    <licenses>
+        <license>
+            <name>Apache License Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
     <dependencies>
         <dependency>
             <groupId>org.rrd4j</groupId>
