@@ -4,7 +4,7 @@
     <groupId>org.rrd4j</groupId>
     <artifactId>rrd4j-cassandra</artifactId>
     <packaging>jar</packaging>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.2-SNAPSHOT</version>
     <description>Rrd4j backend that uses cassandra (datastax) for storage</description>
     <name>rrd4j-cassandra</name>
     <url>https://github.com/rrd4j/rrd4j/</url>
@@ -91,7 +91,7 @@
                 <executions>
                     <execution>
                         <id>sign-artifacts</id>
-                        <phase>deploy</phase>
+                        <phase>verify</phase>
                         <goals>
                             <goal>sign</goal>
                         </goals>
