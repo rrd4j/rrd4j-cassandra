@@ -17,7 +17,8 @@
         <buildSource>1.7</buildSource>
         <buildTarget>1.7</buildTarget>
         <!-- current year. -->
-        <year>2018</year>
+        <year>2019</year>
+        <cu.slf4j.version>1.7.26</cu.slf4j.version>
     </properties>
     <licenses>
         <license>
@@ -29,7 +30,7 @@
         <dependency>
             <groupId>org.rrd4j</groupId>
             <artifactId>rrd4j</artifactId>
-            <version>3.3</version>
+            <version>3.5</version>
         </dependency>
         <dependency>
             <groupId>com.datastax.cassandra</groupId>
@@ -50,6 +51,19 @@
             <version>3.5.0.1</version>
             <scope>test</scope>
         </dependency>
+        <!-- log -->
+                <dependency>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                    <version>${cu.slf4j.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>jcl-over-slf4j</artifactId>
+                    <version>${cu.slf4j.version}</version>
+                    <scope>test</scope>
+                </dependency>
+
     </dependencies>
     <distributionManagement>
         <snapshotRepository>
