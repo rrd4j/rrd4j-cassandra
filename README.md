@@ -15,6 +15,12 @@ you might need to increase the `commitlog_segment_size_in_mb` in cassandra confi
 Otherwise you will get an IllegalArgumentException complaining: `Mutation of xxxMiB is too large for the maximum size of 16.000MiB`
 as the size of the RrdDatastaxBackend.buffer stored will be grater the the half of a cassandra segment.
 For further information see [datastax](https://support.datastax.com/hc/en-us/articles/207267063-Mutation-of-x-bytes-is-too-large-for-the-maxiumum-size-of-y-)   
-  
+
+
+##Releases
+#### 1.1
+Upgraded rrd and cassandra to version 3.5 and cassandra-driver-mapping 3.7.1 
+
+#### 1.0
+First release, depends on rrd version 3.2 and cassandra-driver-mapping 3.4.0  
     
-  

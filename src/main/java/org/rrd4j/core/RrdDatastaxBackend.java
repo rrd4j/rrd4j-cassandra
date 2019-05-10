@@ -12,7 +12,6 @@ import java.nio.ByteBuffer;
  */
 public class RrdDatastaxBackend extends RrdByteArrayBackend {
     private final Mapper<RrdDatastax> mapper;
-    private volatile boolean dirty = false;
 
     /**
      * <p>Constructor for RrdDatastaxBackend.</p>
@@ -25,20 +24,8 @@ public class RrdDatastaxBackend extends RrdByteArrayBackend {
         this.mapper = mapper;
         RrdDatastax rrdObject = mapper.get(path);
         if (rrdObject != null) {
-            buffer = rrdObject.getRrd().array();
+            setBuffer(rrdObject.getRrd().array());
         }
-    }
-
-    /**
-     * <p>write data</p>
-     *
-     * @param offset a long.
-     * @param bytes  an array of byte.
-     * @throws IOException if any.
-     */
-    protected synchronized void write(long offset, byte[] bytes) throws IOException {
-        super.write(offset, bytes);
-        dirty = true;
     }
 
     /**
@@ -46,9 +33,9 @@ public class RrdDatastaxBackend extends RrdByteArrayBackend {
      */
     @Override
     public void close() throws IOException {
-        if (dirty) {
+        if (isDirty()) {
             try {
-                mapper.save(new RrdDatastax().setPath(getPath()).setRrd(ByteBuffer.wrap(buffer)));
+                mapper.save(new RrdDatastax().setPath(getPath()).setRrd(ByteBuffer.wrap(getBuffer())));
             } catch (Throwable t) {
                 throw new IOException("Failed to store", t);
             }
