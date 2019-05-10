@@ -1,7 +1,4 @@
 language: java
-install:
-  # Run original install command but without GPG signing
-  - ./mvnw install -DskipTests=true -Dgpg.skip=true
 sudo: false
 jdk:
   - oraclejdk8
