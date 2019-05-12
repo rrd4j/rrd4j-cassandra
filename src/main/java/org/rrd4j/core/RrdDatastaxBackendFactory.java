@@ -1,12 +1,15 @@
 package org.rrd4j.core;
 
 import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.mapping.Mapper;
 import com.datastax.driver.mapping.MappingManager;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -75,6 +78,25 @@ public class RrdDatastaxBackendFactory extends RrdBackendFactory {
     public List<RrdDatastax> all() {
         ResultSet results = session.execute("SELECT * FROM rrd4j.rrd");
         return mapper.map(results).all();
+    }
+    /**
+     * @return all rrdDatastax objects .
+     */
+    public List<String> allPaths() {
+        ResultSet results = session.execute("SELECT path FROM rrd4j.rrd");
+        Iterator<Row> it = results.iterator();
+        List<String> paths = new ArrayList<String>();
+        while (it.hasNext()){
+            paths.add(it.next().getString("path"));
+        }
+        return paths;
+    }
+
+    public boolean movePath(String from, String to){
+        RrdDatastax f = mapper.get(from);
+        mapper.save(new RrdDatastax().setPath(to).setRrd(f.getRrd()));
+        mapper.delete(from);
+        return true;
     }
 
     /**
