@@ -3,5 +3,4 @@ install:
   - mvn install -DskipTests -Dgpg.skip
 sudo: false
 jdk:
-  - oraclejdk8
   - openjdk8
