@@ -1,6 +1,6 @@
 package org.rrd4j.core;
 
-import com.datastax.driver.mapping.Mapper;
+
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -11,21 +11,27 @@ import java.nio.ByteBuffer;
  * @author Kasper Fock
  */
 public class RrdDatastaxBackend extends RrdByteArrayBackend {
-    private final Mapper<RrdDatastax> mapper;
+//    private final Mapper<RrdDatastax> mapper;
+    private RrdDatastax data;
+    private RrdDatastaxDao dao;
+    private boolean readonly;
+    private boolean exists;
 
     /**
      * <p>Constructor for RrdDatastaxBackend.</p>
      *
      * @param path   a {@link String} object.
-     * @param mapper datastax mapper for RrdDatastax
      */
-    public RrdDatastaxBackend(String path, Mapper<RrdDatastax> mapper) {
+    public RrdDatastaxBackend(String path,RrdDatastaxDao dao,boolean readonly) {
         super(path);
-        this.mapper = mapper;
-        RrdDatastax rrdObject = mapper.get(path);
-        if (rrdObject != null) {
-            setBuffer(rrdObject.getRrd().array());
+        this.readonly = readonly;
+        this.dao = dao;
+        this.data = dao.findByPath(path);
+        this.exists = this.data != null;
+        if(!this.exists){
+            this.data = new RrdDatastax().setPath(path).setRrd(ByteBuffer.allocate(0));
         }
+        this.setByteBuffer(this.data.getRrd());
     }
 
     /**
@@ -33,9 +39,14 @@ public class RrdDatastaxBackend extends RrdByteArrayBackend {
      */
     @Override
     public void close() throws IOException {
-        if (isDirty()) {
+        if (isDirty() && !this.readonly) {
             try {
-                mapper.save(new RrdDatastax().setPath(getPath()).setRrd(ByteBuffer.wrap(getBuffer())));
+                this.data.setRrd(ByteBuffer.wrap(getBuffer()));
+                if(this.exists){
+                    this.dao.update(this.data);
+                }else{
+                    this.dao.create(this.data);
+                }
             } catch (Throwable t) {
                 throw new IOException("Failed to store", t);
             }

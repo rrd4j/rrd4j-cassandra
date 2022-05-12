@@ -1,10 +1,13 @@
 package org.rrd4j.core;
 
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.mapping.Mapper;
-import com.datastax.driver.mapping.MappingManager;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.session.Session;
+import com.datastax.oss.driver.api.core.type.reflect.GenericType;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+
 
 import java.io.IOException;
 import java.net.URI;
@@ -16,22 +19,22 @@ import java.util.logging.Logger;
 /**
  * {@link RrdBackendFactory} that uses
  * <a href="http://docs.datastax.com/en/developer/java-driver/3.4/manual/object_mapper/using/">Datastax mapping java driver</a>
- * to read data. Construct a Mapper {@link Mapper} object and pass it via the constructor.
+ * to read data. Construct a Mapper object and pass it via the constructor.
  *
  * @author <a href="mailto:kasperf@asergo.com">Kasper Fock</a>
  */
 @SuppressWarnings("HardCodedStringLiteral")
 @RrdBackendAnnotation(name = "DATASTAX", shouldValidateHeader = false)
 public class RrdDatastaxBackendFactory extends RrdBackendFactory {
-    private Session session;
-    private MappingManager manager;
-    private Mapper<RrdDatastax> mapper;
+    private CqlSession session;
+    private RrdDatastaxDao dao;
 
 
-    private final String createKeyspace = "CREATE KEYSPACE IF NOT EXISTS rrd4j WITH REPLICATION = { 'class' : 'SimpleStrategy','replication_factor':1 }";
-    private final String createTable = "CREATE TABLE IF NOT EXISTS rrd4j.rrd (path text primary key, rrd blob)";
 
-    static public RrdDatastaxBackendFactory findOrCreate(Session session) {
+    private final SimpleStatement createKeyspace = SimpleStatement.newInstance("CREATE KEYSPACE IF NOT EXISTS rrd4j WITH REPLICATION = { 'class' : 'SimpleStrategy','replication_factor':1 }");
+    private final SimpleStatement createTable = SimpleStatement.newInstance("CREATE TABLE IF NOT EXISTS rrd4j.rrd (path text primary key, rrd blob)");
+
+    static public RrdDatastaxBackendFactory findOrCreate(CqlSession session) {
         try {
             RrdBackendFactory fact = RrdBackendFactory.getDefaultFactory();
             if (fact.name.equals("DATASTAX")) {
@@ -48,19 +51,18 @@ public class RrdDatastaxBackendFactory extends RrdBackendFactory {
      *
      * @param session a {@link Session} object.
      */
-    public RrdDatastaxBackendFactory(Session session) {
+    public RrdDatastaxBackendFactory(CqlSession session) {
         this.session = session;
-        ResultSet rs = session.execute(createKeyspace);
+        ResultSet rs = session.execute(createKeyspace, GenericType.of(ResultSet.class));
         if (!rs.wasApplied()) {
             Logger.getLogger("RrdDatastaxBackendFactory").warning("Failed to create Keyspace for RRD backend");
         }
-        ResultSet tableCreated = session.execute(createTable);
+        ResultSet tableCreated = session.execute(createTable,GenericType.of(ResultSet.class));
         if (!tableCreated.wasApplied()) {
             Logger.getLogger("RrdDatastaxBackendFactory").warning("RRD table not created in cassandra");
         }
-        manager = new MappingManager(session);
-        mapper = manager.mapper(RrdDatastax.class, "rrd4j");
-//        RrdBackendFactory.registerFactory(this);
+        RrdDatastaxMapper mapper = new RrdDatastaxMapperBuilder(session).build();
+        dao = mapper.rrdDao(CqlIdentifier.fromCql("rrd4j"));
         RrdBackendFactory.setActiveFactories(this);
     }
 
@@ -69,15 +71,14 @@ public class RrdDatastaxBackendFactory extends RrdBackendFactory {
      * Creates new RrdDatastaxBackend object for the given id (path).
      */
     protected RrdBackend open(String path, boolean readOnly) throws IOException {
-        return new RrdDatastaxBackend(path, mapper);
+        return new RrdDatastaxBackend(path, this.dao, readOnly);
     }
 
     /**
      * @return all rrdDatastax objects .
      */
     public List<RrdDatastax> all() {
-        ResultSet results = session.execute("SELECT * FROM rrd4j.rrd");
-        return mapper.map(results).all();
+        return this.dao.all().all();
     }
     /**
      * @return all rrdDatastax objects .
@@ -93,9 +94,9 @@ public class RrdDatastaxBackendFactory extends RrdBackendFactory {
     }
 
     public boolean movePath(String from, String to){
-        RrdDatastax f = mapper.get(from);
-        mapper.save(new RrdDatastax().setPath(to).setRrd(f.getRrd()));
-        mapper.delete(from);
+        RrdDatastax f = dao.findByPath(from);
+        dao.create(new RrdDatastax().setPath(to).setRrd(f.getRrd()));
+        this.dao.delete(f);
         return true;
     }
 
@@ -105,7 +106,8 @@ public class RrdDatastaxBackendFactory extends RrdBackendFactory {
      * @param path to delete.
      */
     public void delete(String path) {
-        mapper.delete(path);
+        RrdDatastax d = this.dao.findByPath(path);
+        this.dao.delete(d);
     }
 
     /**
@@ -114,7 +116,7 @@ public class RrdDatastaxBackendFactory extends RrdBackendFactory {
      * Checks if the RRD with the given id (path) already exists in the database.
      */
     protected boolean exists(String path) throws IOException {
-        return mapper.get(path) != null;
+        return this.dao.findByPath(path) != null;
     }
 
     public boolean canStore(URI uri) {

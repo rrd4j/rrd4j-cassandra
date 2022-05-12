@@ -18,6 +18,14 @@ For further information see [datastax](https://support.datastax.com/hc/en-us/art
 
 
 ##Releases
+#### 1.3.1
+Upgraded rrd4j to 3.8.1 and cassandra-driver-mapping 4.14.1
+
+Breaking change: RrdDatastaxBackendFactory now requires CqlSession instead of Session as argument
+
+#### 1.2
+Upgraded rrd and cassandra to version 3.5 and cassandra-driver-mapping 3.7.2
+
 #### 1.1
 Upgraded rrd and cassandra to version 3.5 and cassandra-driver-mapping 3.7.1 
 

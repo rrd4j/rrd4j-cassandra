@@ -1,21 +1,26 @@
 package org.rrd4j.core;
 
-import com.datastax.driver.mapping.annotations.Column;
-import com.datastax.driver.mapping.annotations.PartitionKey;
-import com.datastax.driver.mapping.annotations.Table;
+import com.datastax.oss.driver.api.mapper.annotations.CqlName;
+import com.datastax.oss.driver.api.mapper.annotations.Entity;
+import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
+
 
 import java.nio.ByteBuffer;
 
-@Table(keyspace = "rrd4j", name = "rrd",
+/*@Table(keyspace = "rrd4j", name = "rrd",
         readConsistency = "QUORUM",
         writeConsistency = "QUORUM"
-        )
+        )*/
+@CqlName("rrd")
+@Entity(defaultKeyspace = "rrd4j")
 public class RrdDatastax {
     @PartitionKey
-    @Column(name = "path")
     private String path;
 
     private ByteBuffer rrd;
+
+    public RrdDatastax() {
+    }
 
     public String getPath() {
         return path;

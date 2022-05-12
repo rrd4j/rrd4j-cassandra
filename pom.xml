@@ -4,7 +4,7 @@
     <groupId>org.rrd4j</groupId>
     <artifactId>rrd4j-cassandra</artifactId>
     <packaging>jar</packaging>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.3.1-SNAPSHOT</version>
     <description>Rrd4j backend that uses cassandra (datastax) for storage</description>
     <name>rrd4j-cassandra</name>
     <url>https://github.com/rrd4j/rrd4j/</url>
@@ -14,11 +14,12 @@
         <maven.plugin.resources.version>2.7</maven.plugin.resources.version>
         <maven.plugin.surefire.version>2.19.1</maven.plugin.surefire.version>
         <junit.version>4.13.1</junit.version>
-        <buildSource>1.7</buildSource>
-        <buildTarget>1.7</buildTarget>
+        <buildSource>1.8</buildSource>
+        <buildTarget>1.8</buildTarget>
         <!-- current year. -->
-        <year>2019</year>
-        <cu.slf4j.version>1.7.26</cu.slf4j.version>
+        <year>2022</year>
+        <cu.slf4j.version>1.7.36</cu.slf4j.version>
+        <java-driver.version>4.14.1</java-driver.version>
     </properties>
     <licenses>
         <license>
@@ -30,13 +31,19 @@
         <dependency>
             <groupId>org.rrd4j</groupId>
             <artifactId>rrd4j</artifactId>
-            <version>3.5</version>
+            <version>3.8.1</version>
         </dependency>
         <dependency>
-            <groupId>com.datastax.cassandra</groupId>
-            <artifactId>cassandra-driver-mapping</artifactId>
-            <version>3.7.2</version>
+            <groupId>com.datastax.oss</groupId>
+            <artifactId>java-driver-mapper-runtime</artifactId>
+            <version>${java-driver.version}</version>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.datastax.oss</groupId>
+            <artifactId>java-driver-mapper-processor</artifactId>
+            <version>${java-driver.version}</version>
+            <scope>compile</scope>
         </dependency>
         <!-- Test dependencies. -->
         <dependency>
@@ -48,21 +55,21 @@
         <dependency>
             <groupId>org.cassandraunit</groupId>
             <artifactId>cassandra-unit</artifactId>
-            <version>3.11.2.0</version>
+            <version>4.3.1.0</version>
             <scope>test</scope>
         </dependency>
         <!-- log -->
-                <dependency>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                    <version>${cu.slf4j.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>jcl-over-slf4j</artifactId>
-                    <version>${cu.slf4j.version}</version>
-                    <scope>test</scope>
-                </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${cu.slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <version>${cu.slf4j.version}</version>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
     <distributionManagement>
@@ -70,6 +77,10 @@
             <id>ossrh</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
     </distributionManagement>
     <build>
         <plugins>
@@ -106,6 +117,13 @@
                     <source>${buildSource}</source>
                     <target>${buildTarget}</target>
                     <showWarnings>true</showWarnings>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>com.datastax.oss</groupId>
+                            <artifactId>java-driver-mapper-processor</artifactId>
+                            <version>${java-driver.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
             <plugin>
@@ -167,9 +185,6 @@
             </plugins>
         </pluginManagement>
     </build>
-    <prerequisites>
-        <maven>3.0</maven>
-    </prerequisites>
     <scm>
         <url>https://github.com/rrd4j/rrd4j-cassandra</url>
         <connection>scm:git:https://github.com/rrd4j/rrd4j-cassandra.git</connection>
