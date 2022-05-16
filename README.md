@@ -18,6 +18,8 @@ For further information see [datastax](https://support.datastax.com/hc/en-us/art
 
 
 ##Releases
+#### 1.3.2
+Bugfix release
 #### 1.3.1
 Upgraded rrd4j to 3.8.1 and cassandra-driver-mapping 4.14.1
 

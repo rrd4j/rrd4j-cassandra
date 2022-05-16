@@ -31,7 +31,7 @@ public class RrdDatastaxBackend extends RrdByteArrayBackend {
         if(!this.exists){
             this.data = new RrdDatastax().setPath(path).setRrd(ByteBuffer.allocate(0));
         }
-        this.setByteBuffer(this.data.getRrd());
+        this.setBuffer(this.data.getRrd().array());
     }
 
     /**
@@ -41,7 +41,7 @@ public class RrdDatastaxBackend extends RrdByteArrayBackend {
     public void close() throws IOException {
         if (isDirty() && !this.readonly) {
             try {
-                this.data.setRrd(ByteBuffer.wrap(getBuffer()));
+                this.data.setRrd(ByteBuffer.wrap(this.getBuffer()));
                 if(this.exists){
                     this.dao.update(this.data);
                 }else{
